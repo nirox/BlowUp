@@ -1,0 +1,111 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'kotlin-kapt'
+
+ext {
+    junit_version = '4.12'
+    test_runner_version = '1.1.0'
+    test_espresso_version = '3.1.0'
+    dagger_version = '2.15'
+    rxjava_version = '2.2.3'
+    rxandroid_version = '2.1.0'
+    rxkotlin_version = '2.3.0'
+    appcompat_version = '1.0.2'
+    grid_version = '1.0.0'
+    material_version = '1.1.0-alpha01'
+    preference_version = '1.0.0'
+    constraint_version = '2.0.0-alpha2'
+    gdx_version = '1.9.8'
+    box2DLights_version = '1.4'
+    ashley_version = '1.7.3'
+    ai_version = '1.8.1'
+}
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.mobgen.blowup"
+        minSdkVersion 24
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+configurations { natives }
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "androidx.gridlayout:gridlayout:$grid_version"
+    implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.legacy:legacy-preference-v14:$preference_version"
+    implementation "androidx.constraintlayout:constraintlayout:$constraint_version"
+
+    implementation 'androidx.appcompat:appcompat:1.0.0-alpha1'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
+    testImplementation "junit:junit:$junit_version"
+    androidTestImplementation "androidx.test:runner:$test_runner_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$test_espresso_version"
+
+    //Libgdx
+    implementation "com.badlogicgames.gdx:gdx-backend-android:$gdx_version"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-arm64-v8a"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-x86"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdx_version:natives-x86_64"
+    implementation "com.badlogicgames.gdx:gdx-box2d:$gdx_version"
+    natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-arm64-v8a"
+    natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86"
+    natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdx_version:natives-x86_64"
+    implementation "com.badlogicgames.gdx:gdx-controllers:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-controllers-android:$gdx_version"
+    implementation "com.badlogicgames.gdx:gdx-ai:$ai_version"
+    implementation "com.badlogicgames.ashley:ashley:$ashley_version"
+    implementation "com.badlogicgames.gdx:gdx-freetype:$gdx_version"
+    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-arm64-v8a"
+    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-x86"
+    natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdx_version:natives-x86_64"
+    implementation "com.badlogicgames.gdx:gdx-bullet:$gdx_version"
+    natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-arm64-v8a"
+    natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-x86"
+    natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdx_version:natives-x86_64"
+    implementation "com.badlogicgames.box2dlights:box2dlights:$box2DLights_version"
+
+    //Dagger2
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    implementation "com.google.dagger:dagger:$dagger_version"
+
+    // rx
+    implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
+    implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlin_version"
+
+
+}
+
