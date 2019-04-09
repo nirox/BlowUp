@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.Color
 
 class Constant {
     companion object {
-        const val PATH_PAWN = "texture/pawn/"
         val PIXELS_TO_METER = 1 / (Gdx.graphics.height / 10f)
-
         fun insertSuffix(word: String, suffix: String) = "${word.substringBefore('.')}$suffix.${word.substringAfter('.')}"
         fun getColor(color: Color) = Color(convertColor(color.r), convertColor(color.g), convertColor(color.b), color.a)
 
@@ -19,11 +17,17 @@ class Constant {
     }
 
     enum class Texture(val tName: String) {
-        Board("texture/board.png"),
+        Background("texture/background.png")
     }
 
     enum class Font(val fName: String) {
-        MetropolisLight("font/metropolis_light.ttf")
+        Rentuck("font/rentuck.ttf"),
+        MarkerFeltWide("font/markerfeltwide.ttf")
+    }
+
+    enum class Strings(val sName: String) {
+        Play("Play"),
+        Score("Score")
     }
 
 }
