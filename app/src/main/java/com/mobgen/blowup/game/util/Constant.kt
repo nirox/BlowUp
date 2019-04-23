@@ -17,7 +17,10 @@ class Constant {
     }
 
     enum class Texture(val tName: String) {
-        Background("texture/background.png")
+        BackgroundWater("texture/backgroundWater.png"),
+        BackgroundRock("texture/backgroundRock.png"),
+        BackgroundCave("texture/backgroundCave.png"),
+        Bubble("texture/bubble.png")
     }
 
     enum class Font(val fName: String) {

@@ -6,4 +6,6 @@ interface BlowUpGame {
         fun saveScoreData(value: Pair<String, String>)
         fun goBack()
     }
+
+    fun onBack()
 }

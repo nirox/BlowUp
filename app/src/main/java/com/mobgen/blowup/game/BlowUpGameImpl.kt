@@ -21,11 +21,11 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
     private lateinit var mainScreen: MainScreen
     private lateinit var gameScreen: GameScreen
     private lateinit var scoreScreen: ScoreScreen
+    private var currentScreen = ""
 
     companion object {
         const val TAG = "BlowUpGameImpl"
-        const val GRAVITY_Y = 0f
-        const val GRAVITY_X = 0f
+        const val SCORE_NUMBER = 5
     }
 
     val assetManager = AssetManager()
@@ -35,6 +35,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         loadingScreen = LoadingScreen(this)
         setScreen(loadingScreen)
         launchMainGameScreen()
+
     }
 
 
@@ -53,24 +54,41 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
     fun loadGameScreen(): SequenceAction {
         loadGameScreen = true
         return Actions.sequence(Actions.run {
+            mainScreen = MainScreen(this)
+            gameScreen = GameScreen(this)
+            scoreScreen = ScoreScreen(this)
             goMainScreen()
             loadingScreen.dispose()
         })
     }
 
     fun goMainScreen() {
-        mainScreen = MainScreen(this)
+        currentScreen = MainScreen.TAG
         setScreen(mainScreen)
     }
 
     fun goGameScreen() {
-        gameScreen = GameScreen(this)
+        currentScreen = GameScreen.TAG
         setScreen(gameScreen)
     }
 
     fun goScoreScreen() {
-        scoreScreen = ScoreScreen(this)
+        currentScreen = ScoreScreen.TAG
         setScreen(scoreScreen)
+    }
+
+    override fun onBack() {
+        when (currentScreen) {
+            ScoreScreen.TAG -> scoreScreen.goBack {
+                goMainScreen()
+                mainScreen.goBack()
+            }
+            GameScreen.TAG -> gameScreen.goBack {
+                goMainScreen()
+                mainScreen.goBack()
+            }
+            else -> mainScreen.goBack()
+        }
     }
 
     override fun dispose() {
