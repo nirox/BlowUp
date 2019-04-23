@@ -55,7 +55,10 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         loadGameScreen = true
         return Actions.sequence(Actions.run {
             mainScreen = MainScreen(this)
-            gameScreen = GameScreen(this)
+            gameScreen = GameScreen(this) {
+                goMainScreen()
+                mainScreen.goBack()
+            }
             scoreScreen = ScoreScreen(this)
             goMainScreen()
             loadingScreen.dispose()
@@ -83,10 +86,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
                 goMainScreen()
                 mainScreen.goBack()
             }
-            GameScreen.TAG -> gameScreen.goBack {
-                goMainScreen()
-                mainScreen.goBack()
-            }
+            GameScreen.TAG -> gameScreen.goBack()
             else -> mainScreen.goBack()
         }
     }
