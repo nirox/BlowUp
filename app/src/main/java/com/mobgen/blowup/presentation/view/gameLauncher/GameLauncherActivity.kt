@@ -38,6 +38,10 @@ class GameLauncherActivity : AndroidApplication(), BlowUpGame.Listener {
         onBackPressed()
     }
 
+    override fun onBackPressed() {
+       blowUpGame.onBack()
+    }
+
     override fun saveScoreData(value: Pair<String, String>) {
         val scores: MutableSet<String> = sharedPreferences.getStringSet(value.first, mutableSetOf())
                 ?: mutableSetOf()

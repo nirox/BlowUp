@@ -15,15 +15,18 @@ import com.mobgen.blowup.game.entity.TitleEntity
 class MainScreen(game: BlowUpGameImpl) : BaseScreen(game) {
     private val stage: Stage = Stage(FitViewport(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()))
     private val backgroundEntity: BackgroundEntity
-    private val playButtonEntity: ButtonFontEntity
-    private val scoreButtonEntity: ButtonFontEntity
+    private lateinit var playButtonEntity: ButtonFontEntity
+    private lateinit var scoreButtonEntity: ButtonFontEntity
     private val titleEntity: TitleEntity
+
+    private var movementDirectionTop = false
 
     companion object {
         const val HEIGHT_SCORE_POSITION_PERCENT = 0.20f
         const val HEIGHT_PLAY_POSITION_PERCENT = 0.30f
         const val FONT_PLAY_SIZE = 90
         const val FONT_SCORE_SIZE = 50
+        const val TAG = "MainScreen"
     }
 
     init {
@@ -32,13 +35,38 @@ class MainScreen(game: BlowUpGameImpl) : BaseScreen(game) {
         backgroundEntity = entityFactory.createBackground()
         playButtonEntity = entityFactory.createPlayButton(Gdx.graphics.height * HEIGHT_PLAY_POSITION_PERCENT, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                game.goGameScreen()
+                playButtonEntity.goBack {
+                    backgroundEntity.moveToPosition(
+                            backgroundEntity.waterPosition,
+                            onStartAnimation = {
+                                movementDirectionTop = backgroundEntity.toTop()
+                                titleEntity.setAnimationValues(backgroundMovement = true, toTop = movementDirectionTop)
+                            },
+                            onEndAnimation = {
+                                titleEntity.setAnimationValues(backgroundMovement = false)
+                                game.goGameScreen()
+                            })
+                }
+                scoreButtonEntity.goBack()
+
                 return super.touchDown(event, x, y, pointer, button)
             }
         })
         scoreButtonEntity = entityFactory.createScoreButton(Gdx.graphics.height * HEIGHT_SCORE_POSITION_PERCENT, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                game.goScoreScreen()
+                playButtonEntity.goBack {
+                    backgroundEntity.moveToPosition(
+                            backgroundEntity.cavePosition,
+                            onStartAnimation = {
+                                movementDirectionTop = backgroundEntity.toTop()
+                                titleEntity.setAnimationValues(backgroundMovement = true, toTop = movementDirectionTop)
+                            },
+                            onEndAnimation = {
+                                titleEntity.setAnimationValues(backgroundMovement = false)
+                                game.goScoreScreen()
+                            })
+                }
+                scoreButtonEntity.goBack()
                 return super.touchDown(event, x, y, pointer, button)
             }
         })
@@ -46,7 +74,6 @@ class MainScreen(game: BlowUpGameImpl) : BaseScreen(game) {
 
     override fun show() {
         super.show()
-        //stage.isDebugAll = true
         Gdx.input.inputProcessor = stage
         stage.addActor(backgroundEntity)
         stage.addActor(titleEntity)
@@ -57,9 +84,7 @@ class MainScreen(game: BlowUpGameImpl) : BaseScreen(game) {
 
     override fun render(delta: Float) {
         super.render(delta)
-        Gdx.gl.glClearColor(0f, 0f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-
         stage.act(delta)
         stage.draw()
     }
@@ -67,14 +92,29 @@ class MainScreen(game: BlowUpGameImpl) : BaseScreen(game) {
     override fun hide() {
         super.hide()
         stage.clear()
+    }
+
+    override fun dispose() {
+        super.dispose()
+        stage.dispose()
         backgroundEntity.deatch()
         playButtonEntity.deatch()
         scoreButtonEntity.deatch()
         titleEntity.deatch()
     }
 
-    override fun dispose() {
-        super.dispose()
-        stage.dispose()
+    fun goBack(onEnd: () -> Unit = {}) {
+        backgroundEntity.moveToPosition(
+                backgroundEntity.floorPosition,
+                onStartAnimation = {
+                    titleEntity.setAnimationValues(backgroundMovement = true, toTop = !movementDirectionTop)
+                },
+                onEndAnimation = {
+                    titleEntity.setAnimationValues(backgroundMovement = false)
+                    playButtonEntity.goBack()
+                    scoreButtonEntity.goBack()
+                    onEnd()
+                }
+        )
     }
 }
