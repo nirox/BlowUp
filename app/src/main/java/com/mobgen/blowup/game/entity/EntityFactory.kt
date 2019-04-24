@@ -9,7 +9,7 @@ import com.mobgen.blowup.game.screen.MainScreen
 import com.mobgen.blowup.game.util.Constant
 
 class EntityFactory(private val assetManager: AssetManager, private val localAssetManager: AssetManager) {
-    private val pointBitmapFont = Util.createBitmapFont(Constant.Font.MarkerFeltWide.fName, PointEntity.FONT_SIZE)
+    val pointBitmapFont = Util.createBitmapFont(Constant.Font.MarkerFeltWide.fName, PointEntity.FONT_SIZE)
     fun createPlayButton(heightPosition: Float, visibility: Boolean, listener: InputListener) = ButtonFontEntity(true, heightPosition, Constant.Strings.Play.sName, Util.createBitmapFont(Constant.Font.Rentuck.fName, MainScreen.FONT_PLAY_SIZE), visibility, listener)
     fun createScoreButton(heightPosition: Float, visibility: Boolean, listener: InputListener) = ButtonFontEntity(false, heightPosition, Constant.Strings.Score.sName, Util.createBitmapFont(Constant.Font.Rentuck.fName, MainScreen.FONT_SCORE_SIZE), visibility, listener)
     fun createBackground() = BackgroundEntity(assetManager.get(Constant.Texture.BackgroundWater.tName), assetManager.get(Constant.Texture.BackgroundRock.tName), assetManager.get(Constant.Texture.BackgroundCave.tName))

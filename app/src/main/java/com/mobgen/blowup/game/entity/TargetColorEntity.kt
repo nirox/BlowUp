@@ -12,23 +12,19 @@ class TargetColorEntity(private val texture: Texture) : Actor() {
         private val random = Random()
         private val possibleColors = listOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
         private fun getRandomColor() = possibleColors[random.nextInt(possibleColors.size)]
+        private const val HEIGHT_MARGIN_PERCENT = 1.1f
+        private const val WIDTH_MARGIN_PERCENT = 2.5f
     }
 
     var bubbleColor = getRandomColor()
-    private var targetPositionX = Gdx.graphics.width / 2 - width * 2.5f
-    private var targetPositionY = Gdx.graphics.height - height * 1.1f
-    private var targetSize = (Gdx.graphics.width / 8).toFloat()
 
     fun changeColor(recievedColor: Color) {
         bubbleColor = recievedColor
     }
 
     init {
-        targetSize = (Gdx.graphics.width / 8).toFloat()
-        setSize(targetSize, targetSize)
-        targetPositionX = Gdx.graphics.width / 2 - width * 2.5f
-        targetPositionY = Gdx.graphics.height - height * 1.1f
-        setPosition(targetPositionX, targetPositionY)
+        setSize((Gdx.graphics.width / 8).toFloat(), (Gdx.graphics.width / 8).toFloat())
+        setPosition(Gdx.graphics.width / 2 - width * WIDTH_MARGIN_PERCENT, Gdx.graphics.height - height * HEIGHT_MARGIN_PERCENT)
     }
 
     override fun draw(batch: Batch, parentAlpha: Float) {
