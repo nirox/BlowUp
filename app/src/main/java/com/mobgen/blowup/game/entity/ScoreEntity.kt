@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.scenes.scene2d.Actor
 
-class ScoreEntity(private val bitmapFont: BitmapFont, private val scores: MutableList<Pair<String, String>>) : Actor() {
+class ScoreEntity(private val bitmapFont: BitmapFont, private var scores: List<Pair<String, String>>) : Actor() {
     companion object {
         const val SCORE_FONT = 46
         private const val HEIGHT_MERGIN_ELEMENT_PERCENT = 0.03f
@@ -23,27 +23,23 @@ class ScoreEntity(private val bitmapFont: BitmapFont, private val scores: Mutabl
     private var justAnimateListener = {}
 
     init {
-        scores.add(Pair("Nirox", "79000"))
-        scores.add(Pair("Pepito", "8000"))
-        scores.add(Pair("Pepitox", "900"))
-        scores.add(Pair("Pepito", "30"))
-        scores.add(Pair("Antonio", "0"))
-        val maxElementSize = scores.maxBy { it.first.length + it.second.length }
-        gyphLayout.setText(bitmapFont, "${maxElementSize?.first}: ${maxElementSize?.second}")
-        reset()
+        reset(scores)
     }
 
-    fun reset() {
+    fun reset(scores: List<Pair<String, String>>) {
+        this.scores = scores.reversed()
+        val maxElementSize = scores.maxBy { it.first.length + it.second.length }
+        gyphLayout.setText(bitmapFont, "${maxElementSize?.first}: ${maxElementSize?.second}")
         setSize(gyphLayout.width, (scores.size - 1) * gyphLayout.height + HEIGHT_MERGIN_ELEMENT_PERCENT * Gdx.graphics.height * scores.size)
-        setPosition(Gdx.graphics.width / 2 - width / 2, -Gdx.graphics.height.toFloat() / 2)
-        goTo = height
+        setPosition(Gdx.graphics.width / 2 - width / 2, -Gdx.graphics.height.toFloat()/2)
+        goTo = Gdx.graphics.height/2 - height/2
         justAnimateListener = {}
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
         heightVariation = goTo - y
-        directionVariation = if (Math.abs(heightVariation) >= CLOSE_ANIMATION_END_PERCENT * Gdx.graphics.height) {
+        directionVariation = if (Math.abs(heightVariation) >= CLOSE_ANIMATION_END_PERCENT * Gdx.graphics.width) {
             heightVariation / Math.abs(heightVariation)
         } else {
             justAnimateListener()
@@ -61,7 +57,7 @@ class ScoreEntity(private val bitmapFont: BitmapFont, private val scores: Mutabl
     }
 
     fun goBack(onEndAnimation: () -> Unit = {}) {
-        goTo = if (goTo == height) -Gdx.graphics.height.toFloat() / 2 else height
+        goTo = if (goTo == height) -Gdx.graphics.height.toFloat()/2 else height
         justAnimateListener = onEndAnimation
     }
 

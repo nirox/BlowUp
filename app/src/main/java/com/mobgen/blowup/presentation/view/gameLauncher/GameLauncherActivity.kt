@@ -39,14 +39,15 @@ class GameLauncherActivity : AndroidApplication(), BlowUpGame.Listener {
     }
 
     override fun onBackPressed() {
-       blowUpGame.onBack()
+        blowUpGame.onBack()
     }
 
     override fun saveScoreData(value: Pair<String, String>) {
         val scores: MutableSet<String> = sharedPreferences.getStringSet(value.first, mutableSetOf())
                 ?: mutableSetOf()
         scores.add(value.second)
-        sharedPreferences.edit().putStringSet(value.first, scores).apply()
+        //sharedPreferences.edit().remove(value.first).apply()
+        sharedPreferences.edit().clear().putStringSet(value.first, scores).commit()
     }
 
     override fun getScoreData(number: Int): List<Pair<String, String>> {
@@ -54,7 +55,8 @@ class GameLauncherActivity : AndroidApplication(), BlowUpGame.Listener {
         sharedPreferences.all.forEach {
             scores.addAll((it.value as MutableSet<String>).map { value -> Pair(it.key, value) })
         }
-        return scores.apply { sortBy { it.second.toInt() } }.subList(0, number)
+        val elements = if (scores.size < number) scores.size else number
+        return if (scores.isEmpty()) listOf() else scores.apply { sortBy { it.second.toInt() } }.subList(0, elements)
     }
 
     private fun initDagger() {

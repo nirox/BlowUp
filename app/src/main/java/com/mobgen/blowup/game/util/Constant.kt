@@ -1,9 +1,12 @@
 package com.mobgen.blowup.game.util
 
+import com.badlogic.gdx.graphics.Color
+
 class Constant {
 
-    enum class Color(val r: Int, val g: Int, val b: Int, val a: Float) {
-        PlayerBlue(80, 119, 204, 1f),
+    companion object {
+        private fun convertColor(channel: Int) = channel / 255f
+        fun getColor(color: Color) = Color(convertColor(color.r), convertColor(color.g), convertColor(color.b), color.a)
     }
 
     enum class Texture(val tName: String) {
@@ -23,11 +26,22 @@ class Constant {
         MarkerFeltWide("font/markerfeltwide.ttf")
     }
 
+    enum class Skin(val sName: String) {
+        Default("skin/uiskin.json")
+    }
+
     enum class Strings(val sName: String) {
         Play("Play"),
         Score("Score"),
         Resume("Resume"),
-        Exit("Exit")
+        Exit("Exit"),
+        GameOver("Game Over"),
+        Level("Level"),
+        DefaultPlayerName("Anonymous")
+    }
+
+    enum class Color(val r: Int, val g: Int, val b: Int, val a: Float) {
+        Brown(64, 31, 0, 1f)
     }
 
 }

@@ -11,7 +11,7 @@ class GetTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
 
     companion object {
         const val FONT_SIZE = 20
-        const val VERTICAL_POSITION_PERCENT = 0.1f
+        const val VERTICAL_POSITION_PERCENT = 0.08f
 
 
         const val GET_TEXT = "Get at least "
@@ -20,7 +20,7 @@ class GetTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
     private val pointsGyphLayout = GlyphLayout()
     var points = 0
     var getText = GET_TEXT
-    var colorText = Color(1f, 1f, 1f, 1f)
+    private var colorText = Color.WHITE
 
     init {
         pointsGyphLayout.setText(bitmapFontRentSmall, getText + points)

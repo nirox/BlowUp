@@ -18,8 +18,6 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
 
     private var elapsed = INIT_ELAPSED_TIME
     var isPaused = false
-    var axisX = 0
-    var axisY = 0
 
     init {
         isVisible = false

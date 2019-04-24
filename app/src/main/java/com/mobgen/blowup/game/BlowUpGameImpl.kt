@@ -80,6 +80,10 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         setScreen(scoreScreen)
     }
 
+    fun saveScore(name: String, score: Int) = activity.saveScoreData(Pair(name, score.toString()))
+
+    fun loadScore() = activity.getScoreData(SCORE_NUMBER)
+
     override fun onBack() {
         when (currentScreen) {
             ScoreScreen.TAG -> scoreScreen.goBack {

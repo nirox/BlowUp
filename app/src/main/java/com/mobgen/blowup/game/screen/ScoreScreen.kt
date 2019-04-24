@@ -22,13 +22,13 @@ class ScoreScreen(game: BlowUpGameImpl) : BaseScreen(game) {
         val entityFactory = EntityFactory(game.assetManager, game.localAssetManager)
         backgroundEntity = entityFactory.createBackground()
         backgroundEntity.moveToPositionWithoutAnimation(backgroundEntity.cavePosition)
-        scoreEntity = entityFactory.createScoreEntity(listOf())
+        scoreEntity = entityFactory.createScoreEntity(game.loadScore())
     }
 
     override fun show() {
         super.show()
         Gdx.input.inputProcessor = stage
-        scoreEntity.reset()
+        scoreEntity.reset(game.loadScore())
         stage.addActor(backgroundEntity)
         stage.addActor(scoreEntity)
 
@@ -55,7 +55,7 @@ class ScoreScreen(game: BlowUpGameImpl) : BaseScreen(game) {
     }
 
     fun goBack(onEnd: () -> Unit = {}) {
-        scoreEntity.goBack{
+        scoreEntity.goBack {
             onEnd()
         }
     }
