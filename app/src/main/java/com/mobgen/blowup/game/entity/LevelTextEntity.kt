@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.mobgen.blowup.game.util.Constant
 
 class LevelTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
 
@@ -17,7 +18,7 @@ class LevelTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
     private val pointsGyphLayout = GlyphLayout()
     var level = 0
     var levelText = "Level "
-    var colorText = Color(0.25f, 0.12f, 0f, 1f)
+    var colorText = Constant.getColor(Constant.Color.Brown)
 
     init {
         isVisible = false

@@ -1,16 +1,17 @@
 package com.mobgen.blowup.game.entity
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.mobgen.blowup.game.util.Constant
 
 class GameScoreEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
 
     companion object {
         const val FONT_SIZE = 40
+        const val HEIGHT_MARGIN_PERCENT = 0.025f
     }
 
     private val pointsGyphLayout = GlyphLayout()
@@ -18,9 +19,9 @@ class GameScoreEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
 
     init {
         pointsGyphLayout.setText(bitmapFontRentSmall, pointsText.toString())
-        bitmapFontRentSmall.color = Color(0.25f, 0.12f, 0f, 1f)
+        bitmapFontRentSmall.color = Constant.getColor(Constant.Color.Brown)
         setSize(pointsGyphLayout.width, pointsGyphLayout.height)
-        setPosition(Gdx.graphics.width / 2f - pointsGyphLayout.width / 2f, Gdx.graphics.height.toFloat() - Gdx.graphics.width * 0.025f)
+        setPosition(Gdx.graphics.width / 2f - pointsGyphLayout.width / 2f, Gdx.graphics.height.toFloat() - Gdx.graphics.width * HEIGHT_MARGIN_PERCENT)
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {

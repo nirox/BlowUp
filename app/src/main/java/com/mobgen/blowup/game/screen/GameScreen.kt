@@ -4,23 +4,30 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mobgen.blowup.game.BlowUpGameImpl
 import com.mobgen.blowup.game.entity.*
+import com.mobgen.blowup.game.util.Constant
 import java.util.*
 
 class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : BaseScreen(game) {
     companion object {
         const val TAG = "GameScreen"
-        const val SUCCESS_POINTS = 10
-        const val FAIL_POINTS = -5
-        const val BIG_FAIL_POINTS = -30
         const val FONTS_SIZE = 75
-        const val POINTS_EACH_LEVEL = 100
-        const val INITIAL_MAX_BUBBLE_SCREEN = 1
+        private const val SUCCESS_POINTS = 10
+        private const val FAIL_POINTS = -5
+        private const val BIG_FAIL_POINTS = -30
+        private const val POINTS_EACH_LEVEL = 100
+        private const val INITIAL_MAX_BUBBLE_SCREEN = 1
+        private const val INITIAL_SPAWN_TIME = 0.25f
+        private const val INITIAL_SPAWN_BOMB_EACH_BUBBLE = 20
+        private const val SPAWN_TIME_DECREMENT_EACH_LEVEL = 0.02f
+        private const val SPAWN_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL = 1
+        private const val MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL = 6
     }
 
     private val stage: Stage = Stage(FitViewport(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()))
@@ -29,9 +36,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private var bombs = arrayListOf<BombEntity>()
 
     private var counterTime: Float = 0f
-    private var spawnTime: Float = 0.25f
-    private var spawnBombs: Int = 20
-    private var maxBombColor: Int = INITIAL_MAX_BUBBLE_SCREEN
+    private var spawnTime: Float = INITIAL_SPAWN_TIME
+    private var spawnBombs: Int = INITIAL_SPAWN_BOMB_EACH_BUBBLE
+    private var maxBubbleColor: Int = INITIAL_MAX_BUBBLE_SCREEN
     private val random = Random()
     private var randomX: Float = 0f
     private var randomY: Float = 0f
@@ -50,10 +57,10 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private val exitButtonEntity: ButtonFontEntity
 
     private var isPaused = false
-    var count = 0
+    private var count = 0
     private var totalBubblesCount = 0
     private var bombLocalization = Vector2(0f, 0f)
-    var colorsAmount = mutableMapOf<Color, Int>()
+    private var colorsAmount = mutableMapOf<Color, Int>()
 
     init {
         backgroundEntity = entityFactory.createBackground()
@@ -119,92 +126,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
                         randomY = random.nextInt(Gdx.graphics.height - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH).toInt() - (0.1f * Gdx.graphics.height.toFloat()).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH).toInt() / 3
 
                         if (totalBubblesCount >= spawnBombs) {
-                            if (!bubbles.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }
-                                    && !bombs.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }) {
-                                val bomb = entityFactory.createBomb(
-                                        listener = object : InputListener() {
-                                            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                                                if (!isPaused) {
-                                                    val bombTarget = (event?.target as BombEntity)
-                                                    bombTarget.blowUp()
-                                                    bombs.remove(bombTarget)
-                                                }
-                                                return super.touchDown(event, x, y, pointer, button)
-                                            }
-                                        },
-                                        onAutomaticBlowUp = {
-                                            failed = true
-                                            gameScoreEntity.pointsText += BIG_FAIL_POINTS
-                                            addPoint(it.x, it.y, it.width, it.height, Color.RED, BIG_FAIL_POINTS.toString())
-                                            bombs.remove(it)
-                                        })
-
-                                bomb.setPosition(randomX, randomY)
-                                counterTime = 0f
-                                bombs.add(bomb)
-                                stage.addActor(bomb)
-                                bombLocalization = Vector2(bomb.x, bomb.y)
-                                totalBubblesCount = 0
-                            }
+                            createBomb()
                         } else {
-                            if (!bubbles.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH).toInt() }
-                                    && !bombs.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }) {
-                                val bubble = entityFactory.createBubble(
-                                        listener = object : InputListener() {
-                                            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                                                if (!isPaused) {
-                                                    val bubbleTarget = (event?.target as BubbleEntity)
-                                                    val pointText: String
-                                                    val colorFont: Color
-                                                    if (bubbleTarget.bubbleColor == targetEntity.bubbleColor) {
-                                                        colorFont = Color.WHITE
-                                                        gameScoreEntity.pointsText += SUCCESS_POINTS
-                                                        pointText = "+$SUCCESS_POINTS"
-                                                    } else {
-                                                        failed = true
-                                                        targetEntity.changeColor(bubbleTarget.bubbleColor)
-                                                        colorFont = Color.RED
-                                                        gameScoreEntity.pointsText += BIG_FAIL_POINTS
-                                                        pointText = BIG_FAIL_POINTS.toString()
-                                                    }
-
-                                                    addPoint(bubbleTarget.x, bubbleTarget.y, bubbleTarget.width, bubbleTarget.height, colorFont, pointText)
-                                                    bubbleTarget.blowUp()
-                                                    count = colorsAmount[bubbleTarget.bubbleColor]
-                                                            ?: 0
-                                                    colorsAmount[bubbleTarget.bubbleColor] = count - 1
-                                                    bubbles.remove(bubbleTarget)
-                                                }
-                                                return super.touchDown(event, x, y, pointer, button)
-                                            }
-                                        },
-                                        onAutomaticBlowUp = {
-                                            if (it.bubbleColor == targetEntity.bubbleColor) {
-                                                failed = true
-                                                gameScoreEntity.pointsText += FAIL_POINTS
-                                                addPoint(it.x, it.y, it.width, it.height, Color.RED, FAIL_POINTS.toString())
-
-                                            }
-                                            count = colorsAmount[it.bubbleColor]
-                                                    ?: 0
-                                            colorsAmount[it.bubbleColor] = count - 1
-                                            bubbles.remove(it)
-                                        })
-
-                                colorsAmount.forEach { (key, value) ->
-                                    if (value > maxBombColor) bubble.possibleColors.remove(key)
-                                }
-                                bubble.getRandomColor()
-                                count = colorsAmount[bubble.bubbleColor] ?: 0
-                                colorsAmount[bubble.bubbleColor] = count + 1
-                                bubble.setPosition(randomX, randomY)
-                                counterTime = 0f
-                                if (bubble.possibleColors.isNotEmpty()) {
-                                    bubbles.add(bubble)
-                                    stage.addActor(bubble)
-                                    totalBubblesCount++
-                                }
-                            }
+                            createBubble()
                         }
                     }
                 }
@@ -260,14 +184,14 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         if (gameScoreEntity.pointsText >= levelTextEntity.level * POINTS_EACH_LEVEL) {
             counterTime = 0f
             levelTextEntity.level++
-            spawnTime -= 0.02f
-            spawnBombs -= 1
-            maxBombColor += (levelTextEntity.level) / 6
+            spawnTime -= SPAWN_TIME_DECREMENT_EACH_LEVEL
+            spawnBombs -= SPAWN_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL
+            maxBubbleColor += levelTextEntity.level / MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL
             levelTextEntity.isVisible = true
         } else {
             bubbleButtons.changeColor(Color.RED)
             levelTextEntity.level = 0
-            levelTextEntity.levelText = "Game Over"
+            levelTextEntity.levelText = Constant.Strings.GameOver.sName
             levelTextEntity.isVisible = true
             pauseGame()
         }
@@ -306,9 +230,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             } else {
                 bubbleButtons.changeColor(Color.RED)
                 exitButtonEntity.setPosition(exitButtonEntity.x, Gdx.graphics.height / 2f)
-
             }
-
 
             bubbles.forEach {
                 it.isPaused = true
@@ -317,6 +239,101 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
                 it.isPaused = true
             }
             isPaused = true
+        }
+    }
+
+    private fun createBomb() {
+        if (!bubbles.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }
+                && !bombs.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }) {
+            val bomb = entityFactory.createBomb(
+                    listener = object : InputListener() {
+                        override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                            if (!isPaused) {
+                                val bombTarget = (event?.target as BombEntity)
+                                bombTarget.blowUp()
+                                bombs.remove(bombTarget)
+                            }
+                            return super.touchDown(event, x, y, pointer, button)
+                        }
+                    },
+                    onAutomaticBlowUp = {
+                        failed = true
+                        gameScoreEntity.pointsText += BIG_FAIL_POINTS
+                        addPoint(it.x, it.y, it.width, it.height, Color.RED, BIG_FAIL_POINTS.toString())
+                        bombs.remove(it)
+                    })
+
+            bomb.setPosition(randomX, randomY)
+            counterTime = 0f
+            bombs.add(bomb)
+            stage.addActor(bomb)
+            bombLocalization = Vector2(bomb.x, bomb.y)
+            totalBubblesCount = 0
+        }
+    }
+
+    private fun createBubble() {
+        if (!bubbles.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH).toInt() }
+                && !bombs.any { Vector2(it.x, it.y).dst(randomX, randomY) < (Gdx.graphics.width * BombEntity.BUBBLE_SIZE_WIDTH).toInt() }) {
+            val bubble = entityFactory.createBubble(
+                    listener = object : InputListener() {
+                        override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                            onTouchBubble(event?.target)
+                            return super.touchDown(event, x, y, pointer, button)
+                        }
+                    },
+                    onAutomaticBlowUp = {
+                        if (it.bubbleColor == targetEntity.bubbleColor) {
+                            failed = true
+                            gameScoreEntity.pointsText += FAIL_POINTS
+                            addPoint(it.x, it.y, it.width, it.height, Color.RED, FAIL_POINTS.toString())
+
+                        }
+                        count = colorsAmount[it.bubbleColor]
+                                ?: 0
+                        colorsAmount[it.bubbleColor] = count - 1
+                        bubbles.remove(it)
+                    })
+
+            colorsAmount.forEach { (key, value) ->
+                if (value > maxBubbleColor) bubble.possibleColors.remove(key)
+            }
+            bubble.getRandomColor()
+            count = colorsAmount[bubble.bubbleColor] ?: 0
+            colorsAmount[bubble.bubbleColor] = count + 1
+            bubble.setPosition(randomX, randomY)
+            counterTime = 0f
+            if (bubble.possibleColors.isNotEmpty()) {
+                bubbles.add(bubble)
+                stage.addActor(bubble)
+                totalBubblesCount++
+            }
+        }
+    }
+
+    private fun onTouchBubble(target: Actor?) {
+        if (!isPaused) {
+            val bubbleTarget = (target as BubbleEntity)
+            val pointText: String
+            val colorFont: Color
+            if (bubbleTarget.bubbleColor == targetEntity.bubbleColor) {
+                colorFont = Color.WHITE
+                gameScoreEntity.pointsText += SUCCESS_POINTS
+                pointText = "+$SUCCESS_POINTS"
+            } else {
+                failed = true
+                targetEntity.changeColor(bubbleTarget.bubbleColor)
+                colorFont = Color.RED
+                gameScoreEntity.pointsText += BIG_FAIL_POINTS
+                pointText = BIG_FAIL_POINTS.toString()
+            }
+
+            addPoint(bubbleTarget.x, bubbleTarget.y, bubbleTarget.width, bubbleTarget.height, colorFont, pointText)
+            bubbleTarget.blowUp()
+            count = colorsAmount[bubbleTarget.bubbleColor]
+                    ?: 0
+            colorsAmount[bubbleTarget.bubbleColor] = count - 1
+            bubbles.remove(bubbleTarget)
         }
     }
 }
