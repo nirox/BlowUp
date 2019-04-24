@@ -11,7 +11,7 @@ class TargetColorEntity(private val texture: Texture) : Actor() {
     companion object {
         private val random = Random()
         private val possibleColors = listOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
-        private fun getRandomColor() = possibleColors[random.nextInt(possibleColors.size)]
+        fun getRandomColor() = possibleColors[random.nextInt(possibleColors.size)]
     }
 
     var bubbleColor = getRandomColor()

@@ -23,6 +23,7 @@ class EntityFactory(private val assetManager: AssetManager, private val localAss
     fun createTimer() = TimerEntity(assetManager.get(Constant.Texture.WhitePixel.tName))
     fun createGameScore() = GameScoreEntity(Util.createBitmapFont(Constant.Font.MarkerFeltWide.fName, GameScoreEntity.FONT_SIZE))
     fun createLevelText() = LevelTextEntity(Util.createBitmapFont(Constant.Font.MarkerFeltWide.fName, LevelTextEntity.FONT_SIZE))
+    fun createGetText() = GetTextEntity(Util.createBitmapFont(Constant.Font.MarkerFeltWide.fName, GetTextEntity.FONT_SIZE))
     fun createPoints(pointColor: Color, pointText: String, parentPositionX: Float, parentPositionY: Float, parentSizeX: Float, parentSizeY: Float) = PointEntity(pointBitmapFont, pointColor, pointText, parentPositionX, parentPositionY, parentSizeX, parentSizeY)
     fun createResumeButton(heightPosition: Float, visibility: Boolean, listener: InputListener) = ButtonFontEntity(true, heightPosition, Constant.Strings.Resume.sName, Util.createBitmapFont(Constant.Font.Rentuck.fName, GameScreen.FONTS_SIZE), visibility, listener)
     fun createExitButton(heightPosition: Float, visibility: Boolean, listener: InputListener) = ButtonFontEntity(false, heightPosition, Constant.Strings.Exit.sName, Util.createBitmapFont(Constant.Font.Rentuck.fName, GameScreen.FONTS_SIZE), visibility, listener)

@@ -21,6 +21,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         const val FONTS_SIZE = 75
         const val POINTS_EACH_LEVEL = 100
         const val INITIAL_MAX_BUBBLE_SCREEN = 1
+        const val INITIAL_SPAWN_BOMBS = 20
+        const val INITIAL_SPAWN_TIME = 0.25f
+        const val COUNTER_TIME = 0f
     }
 
     private val stage: Stage = Stage(FitViewport(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()))
@@ -28,10 +31,10 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private var bubbles = arrayListOf<BubbleEntity>()
     private var bombs = arrayListOf<BombEntity>()
 
-    private var counterTime: Float = 0f
-    private var spawnTime: Float = 0.25f
-    private var spawnBombs: Int = 20
-    private var maxBombColor: Int = INITIAL_MAX_BUBBLE_SCREEN
+    private var counterTime: Float = COUNTER_TIME
+    private var spawnTime: Float = INITIAL_SPAWN_TIME
+    private var spawnBombs: Int = INITIAL_SPAWN_BOMBS
+    private var maxBubbleColor: Int = INITIAL_MAX_BUBBLE_SCREEN
     private val random = Random()
     private var randomX: Float = 0f
     private var randomY: Float = 0f
@@ -44,6 +47,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private var timer: TimerEntity
     private var gameScoreEntity: GameScoreEntity
     private var levelTextEntity: LevelTextEntity
+    private var getTextEntity: GetTextEntity
     private var pauseButton: PauseButtonEntity
     private lateinit var lastPointCreated: PointEntity
     private val resumeButtonEntity: ButtonFontEntity
@@ -83,6 +87,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         bubbleButtons = entityFactory.createTarget()
         gameScoreEntity = entityFactory.createGameScore()
         levelTextEntity = entityFactory.createLevelText()
+        getTextEntity = entityFactory.createGetText()
 
     }
 
@@ -95,8 +100,22 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         stage.addActor(targetEntity)
         stage.addActor(gameScoreEntity)
         stage.addActor(levelTextEntity)
+        stage.addActor(getTextEntity)
         stage.addActor(pauseButton)
+        counterTime = COUNTER_TIME
+        levelTextEntity.level++
+        spawnTime = INITIAL_SPAWN_TIME
+        spawnBombs = INITIAL_SPAWN_BOMBS
+        maxBubbleColor = INITIAL_MAX_BUBBLE_SCREEN
+        counterTime = 0f
+        timer.time = 0f
+        bubbleButtons.changeColor(Color.BLUE)
+        levelTextEntity.level = 0
+        levelTextEntity.levelText = "Level "
+        gameScoreEntity.pointsText = 0
+        getTextEntity.points = 0
         prepareLevel()
+        if (isPaused) pauseGame()
     }
 
     override fun render(delta: Float) {
@@ -107,9 +126,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             counterTime += delta
 
             if (!changingLevel) {
-                timer.time += delta * Gdx.graphics.height * 0.033f
+                timer.time += delta * Gdx.graphics.height * 0.066f
 
-                if (timer.time >= Gdx.graphics.height / 2) {
+                if (timer.time >= Gdx.graphics.height) {
                     prepareLevel()
                 } else {
                     timer.time += delta
@@ -192,7 +211,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
                                         })
 
                                 colorsAmount.forEach { (key, value) ->
-                                    if (value > maxBombColor) bubble.possibleColors.remove(key)
+                                    if (value > maxBubbleColor) bubble.possibleColors.remove(key)
                                 }
                                 bubble.getRandomColor()
                                 count = colorsAmount[bubble.bubbleColor] ?: 0
@@ -258,11 +277,13 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         changingLevel = true
 
         if (gameScoreEntity.pointsText >= levelTextEntity.level * POINTS_EACH_LEVEL) {
+            targetEntity.changeColor(TargetColorEntity.getRandomColor())
             counterTime = 0f
             levelTextEntity.level++
+            getTextEntity.points = levelTextEntity.level * 100
             spawnTime -= 0.02f
             spawnBombs -= 1
-            maxBombColor += (levelTextEntity.level) / 6
+            maxBubbleColor += (levelTextEntity.level) / 6
             levelTextEntity.isVisible = true
         } else {
             bubbleButtons.changeColor(Color.RED)
@@ -292,23 +313,27 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         } else {
             pauseButton.isVisible = false
             stage.addActor(bubbleButtons)
-            bubbleButtons.height = Gdx.graphics.width / 2f
-            bubbleButtons.width = Gdx.graphics.width / 2f
+            bubbleButtons.height = Gdx.graphics.width / 1.5f
+            bubbleButtons.width = Gdx.graphics.width / 1.5f
             bubbleButtons.x = Gdx.graphics.width / 2f - bubbleButtons.width / 2
-            bubbleButtons.y = Gdx.graphics.height / 2 - bubbleButtons.width / 2 + exitButtonEntity.height / 2
+            bubbleButtons.y = Gdx.graphics.height / 2 - bubbleButtons.width / 1.5f
 
             stage.addActor(exitButtonEntity)
             if (levelTextEntity.level != 0) {
                 bubbleButtons.changeColor(Color.BLUE)
                 stage.addActor(resumeButtonEntity)
-                resumeButtonEntity.setPosition(resumeButtonEntity.x, Gdx.graphics.height / 2 + resumeButtonEntity.height)
-                exitButtonEntity.setPosition(exitButtonEntity.x, Gdx.graphics.height / 2 - exitButtonEntity.height)
+                resumeButtonEntity.setPosition(resumeButtonEntity.x, bubbleButtons.y + (bubbleButtons.height/4)*3 - resumeButtonEntity.height)
+                exitButtonEntity.setPosition(exitButtonEntity.x, bubbleButtons.y + bubbleButtons.height/4)
             } else {
+                var scoreTemp = gameScoreEntity.pointsText
+                gameScoreEntity = entityFactory.createGameScore()
+                gameScoreEntity.colorText = Color(1f, 1f, 1f, 1f)
+                stage.addActor(gameScoreEntity)
+                gameScoreEntity.pointsText = scoreTemp
+                gameScoreEntity.setPosition(gameScoreEntity.x, bubbleButtons.y + (bubbleButtons.height/4)*3 + gameScoreEntity.height/2)
+                exitButtonEntity.setPosition(exitButtonEntity.x, bubbleButtons.y + bubbleButtons.height/4 - exitButtonEntity.height/2)
                 bubbleButtons.changeColor(Color.RED)
-                exitButtonEntity.setPosition(exitButtonEntity.x, Gdx.graphics.height / 2f)
-
             }
-
 
             bubbles.forEach {
                 it.isPaused = true

@@ -12,11 +12,12 @@ class LevelTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
     companion object {
         const val FONT_SIZE = 70
         const val FONT_POSITION_PERCENT = 0.8f
+        const val LEVEL_TEXT = "Level "
     }
 
     private val pointsGyphLayout = GlyphLayout()
     var level = 0
-    var levelText = "Level "
+    var levelText = LEVEL_TEXT
     var colorText = Color(0.25f, 0.12f, 0f, 1f)
 
     init {

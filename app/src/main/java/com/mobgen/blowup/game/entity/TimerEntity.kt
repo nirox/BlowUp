@@ -8,10 +8,13 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 
 class TimerEntity(private val texture: Texture) : Actor() {
+    companion object {
+        const val WIDTH_PERCENT = 0.03f
+    }
     var time = 0f
 
     init {
-        setSize(Gdx.graphics.width*0.03f, 0f)
+        setSize(Gdx.graphics.width * WIDTH_PERCENT, 0f)
         setPosition(0f, 0f)
     }
 
