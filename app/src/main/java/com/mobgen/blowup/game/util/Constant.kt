@@ -37,7 +37,8 @@ class Constant {
         Exit("Exit"),
         GameOver("Game Over"),
         Level("Level"),
-        DefaultPlayerName("Anonymous")
+        DefaultPlayerName("Anonymous"),
+        HightScore("Hight Score")
     }
 
     enum class Color(val r: Int, val g: Int, val b: Int, val a: Float) {

@@ -46,8 +46,9 @@ class GameLauncherActivity : AndroidApplication(), BlowUpGame.Listener {
         val scores: MutableSet<String> = sharedPreferences.getStringSet(value.first, mutableSetOf())
                 ?: mutableSetOf()
         scores.add(value.second)
-        //sharedPreferences.edit().remove(value.first).apply()
-        sharedPreferences.edit().clear().putStringSet(value.first, scores).commit()
+
+        sharedPreferences.edit().remove(value.first).commit()
+        sharedPreferences.edit().putStringSet(value.first, scores).commit()
     }
 
     override fun getScoreData(number: Int): List<Pair<String, String>> {

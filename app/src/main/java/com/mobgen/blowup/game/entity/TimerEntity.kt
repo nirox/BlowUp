@@ -19,7 +19,7 @@ class TimerEntity(private val texture: Texture) : Actor() {
     }
 
     override fun draw(batch: Batch, parentAlpha: Float) {
-        batch.color = Color(1f,0f,0f,1f)
+        batch.color = Color.BLUE
 
         batch.draw(texture, x, y, width, time)
     }

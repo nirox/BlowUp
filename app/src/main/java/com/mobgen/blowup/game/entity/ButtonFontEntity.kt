@@ -22,7 +22,7 @@ class ButtonFontEntity(positionLeft: Boolean, heighPosition: Float, private val 
     private val animationSpeed = ANIMATION_SPEED_PERCENT * Gdx.graphics.width
 
     companion object {
-        private const val ANIMATION_SPEED_PERCENT = 0.8f
+        private const val ANIMATION_SPEED_PERCENT = 1.8f
         private const val CLOSE_ANIMATION_END_PERCENT = 0.02f
     }
 
