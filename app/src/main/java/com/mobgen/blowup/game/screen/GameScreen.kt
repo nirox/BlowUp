@@ -24,13 +24,16 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         private const val COUNTER_TIME = 0f
         private const val FAIL_POINTS = -5
         private const val BIG_FAIL_POINTS = -30
-        private const val POINTS_EACH_LEVEL = 100
+        private const val POINTS_EACH_LEVEL = 150
         private const val INITIAL_MAX_BUBBLE_SCREEN = 1
         private const val INITIAL_SPAWN_TIME = 0.25f
-        private const val INITIAL_SPAWN_BOMB_EACH_BUBBLE = 20
+        private const val INITIAL_SPAWN_BOMB_EACH_BUBBLE = 4
+        private const val MIN_SPAWN_BOMB_EACH_BUBBLE = 1
         private const val SPAWN_TIME_DECREMENT_EACH_LEVEL = 0.02f
-        private const val SPAWN_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL = 1
+        private const val MAX_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL = 4
         private const val MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL = 6
+        private const val DECREMENT_BOMB_EACH_X_LEVEL = 1
+        private const val INCREMENT_BUBBLE_EACH_X_LEVEL = 1
         private const val BUBBLE_PAUSE_WIDTH_PERCENT = 1.5f
         private const val MAX_TIME = 0.066f
         private const val WIDTH_MARGIN_INPUT = 0.06f
@@ -63,7 +66,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private val exitButtonEntity: ButtonFontEntity
     private var isPaused = false
     private var count = 0
-    private var totalBubblesCount = 0
+    private var currentTargetBubblesCount = 0
     private var bombLocalization = Vector2(0f, 0f)
     private var colorsAmount = mutableMapOf<Color, Int>()
     private lateinit var lastPointCreated: PointEntity
@@ -155,7 +158,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
                         randomX = random.nextInt(Gdx.graphics.width - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
                         randomY = random.nextInt(Gdx.graphics.height - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() - (0.1f * Gdx.graphics.height.toFloat()).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
 
-                        if (totalBubblesCount >= spawnBombs) {
+                        if (currentTargetBubblesCount > spawnBombs) {
                             createBomb()
                         } else {
                             createBubble()
@@ -214,11 +217,12 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         if (gameScoreEntity.pointsText >= levelTextEntity.level * POINTS_EACH_LEVEL) {
             targetEntity.changeColor(TargetColorEntity.getRandomColor())
             counterTime = 0f
+            gameScoreEntity.minPoints = levelTextEntity.level * POINTS_EACH_LEVEL
             levelTextEntity.level++
             getTextEntity.points = levelTextEntity.level * POINTS_EACH_LEVEL
             spawnTime -= SPAWN_TIME_DECREMENT_EACH_LEVEL
-            spawnBombs -= SPAWN_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL
-            maxBubbleColor += levelTextEntity.level / MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL
+            if (spawnBombs >= MIN_SPAWN_BOMB_EACH_BUBBLE && levelTextEntity.level % MAX_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL == 0) spawnBombs -=  DECREMENT_BOMB_EACH_X_LEVEL
+            if(levelTextEntity.level % MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL == 0)maxBubbleColor += INCREMENT_BUBBLE_EACH_X_LEVEL
             levelTextEntity.isVisible = true
         } else {
             bubbleButtons.changeColor(Color.RED)
@@ -284,7 +288,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             bombs.add(bomb)
             stage.addActor(bomb)
             bombLocalization = Vector2(bomb.x, bomb.y)
-            totalBubblesCount = 0
+            currentTargetBubblesCount = 0
         }
     }
 
@@ -322,7 +326,8 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             if (bubble.possibleColors.isNotEmpty()) {
                 bubbles.add(bubble)
                 stage.addActor(bubble)
-                totalBubblesCount++
+                if (bubble.bubbleColor == targetEntity.bubbleColor)
+                    currentTargetBubblesCount++
             }
         }
     }
