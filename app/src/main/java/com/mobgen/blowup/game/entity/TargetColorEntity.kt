@@ -11,7 +11,7 @@ class TargetColorEntity(private val texture: Texture) : Actor() {
     companion object {
         private val random = Random()
         private val possibleColors = listOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
-        private fun getRandomColor() = possibleColors[random.nextInt(possibleColors.size)]
+        fun getRandomColor() = possibleColors[random.nextInt(possibleColors.size)]
         private const val HEIGHT_MARGIN_PERCENT = 1.1f
         private const val WIDTH_MARGIN_PERCENT = 2.5f
     }

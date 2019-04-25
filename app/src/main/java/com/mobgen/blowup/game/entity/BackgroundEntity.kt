@@ -12,7 +12,7 @@ class BackgroundEntity(private val textureBackgroundWater: Texture, private val 
     companion object {
         private const val HEIGHT_MARGIN_PERCENT = 0.02f
         private const val BACKGROUND_WATER_SCREENS = 2
-        const val ANIMATION_SPEED_PERCENT = 1.2f
+        const val ANIMATION_SPEED_PERCENT = 1.8f
         private const val CLOSE_ANIMATION_END_PERCENT = 0.02f
     }
 
@@ -21,7 +21,7 @@ class BackgroundEntity(private val textureBackgroundWater: Texture, private val 
     private val sizeBackgroundRock = Vector2(Gdx.graphics.width.toFloat(), Gdx.graphics.width * textureBackgroundRock.height / textureBackgroundRock.width.toFloat())
     private val sizeBackgroundCave = Vector2(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private var animate = false
-    private var distanceVariation  =0f
+    private var distanceVariation = 0f
     private var goTo = 0f
     private lateinit var onEndAnimation: () -> Unit
 

@@ -1,7 +1,6 @@
 package com.mobgen.blowup.game.entity
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
@@ -17,12 +16,13 @@ class LevelTextEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
 
     private val pointsGyphLayout = GlyphLayout()
     var level = 0
-    var levelText = "Level "
-    var colorText = Constant.getColor(Constant.Color.Brown)
+    var levelText = Constant.Strings.Level.sName
+    private var colorText = Constant.getColor(Constant.Color.Brown)
 
     init {
         isVisible = false
-        pointsGyphLayout.setText(bitmapFontRentSmall, levelText + level)
+        pointsGyphLayout.setText(bitmapFontRentSmall, "" +
+                "$levelText $level")
         bitmapFontRentSmall.color = colorText
         setSize(pointsGyphLayout.width, pointsGyphLayout.height)
         setPosition(Gdx.graphics.width / 2f - pointsGyphLayout.width / 2f, Gdx.graphics.height * FONT_POSITION_PERCENT)

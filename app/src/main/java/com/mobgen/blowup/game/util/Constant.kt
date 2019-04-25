@@ -26,12 +26,19 @@ class Constant {
         MarkerFeltWide("font/markerfeltwide.ttf")
     }
 
+    enum class Skin(val sName: String) {
+        Default("skin/uiskin.json")
+    }
+
     enum class Strings(val sName: String) {
         Play("Play"),
         Score("Score"),
         Resume("Resume"),
         Exit("Exit"),
-        GameOver("Game Over")
+        GameOver("Game Over"),
+        Level("Level"),
+        DefaultPlayerName("Anonymous"),
+        HightScore("Hight Score")
     }
 
     enum class Color(val r: Int, val g: Int, val b: Int, val a: Float) {

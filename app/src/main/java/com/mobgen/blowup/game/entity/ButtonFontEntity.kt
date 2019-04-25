@@ -22,7 +22,7 @@ class ButtonFontEntity(positionLeft: Boolean, heighPosition: Float, private val 
     private val animationSpeed = ANIMATION_SPEED_PERCENT * Gdx.graphics.width
 
     companion object {
-        private const val ANIMATION_SPEED_PERCENT = 0.8f
+        private const val ANIMATION_SPEED_PERCENT = 1.8f
         private const val CLOSE_ANIMATION_END_PERCENT = 0.02f
     }
 
@@ -46,10 +46,15 @@ class ButtonFontEntity(positionLeft: Boolean, heighPosition: Float, private val 
 
         setPosition(x + (positionDirection * animationSpeed * Gdx.graphics.deltaTime), y)
         batch?.color = Color.WHITE
+        bitmapFont.color = Color.WHITE
         batch?.let {
             bitmapFont.draw(it, word, x, y + height)
         }
 
+    }
+
+    fun moveWithoutAnimation() {
+        setPosition(goTo, y)
     }
 
     fun goBack(onJustAnimate: () -> Unit = {}) {

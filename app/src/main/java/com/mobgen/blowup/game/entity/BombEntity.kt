@@ -11,12 +11,13 @@ import java.util.*
 
 class BombEntity(private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BombEntity) -> Unit) : Actor() {
     companion object {
-        const val BUBBLE_SIZE_WIDTH = 0.20f
-        const val INIT_ELAPSED_TIME = 0.5f
-        const val MAX_ELAPSED_TIME = 2f + INIT_ELAPSED_TIME
+        private const val BUBBLE_SIZE_WIDTH = 0.1f
+        const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
+        const val INCREMENT_IN_EACH_FRAME = 0.06f
+        const val MAX_ELAPSED_TIME = 2f
     }
 
-    private var elapsed = INIT_ELAPSED_TIME
+    private var elapsed = 0f
     var isPaused = false
 
     init {
@@ -40,8 +41,8 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
             }
             if (isVisible) {
                 batch.color = Color.WHITE
-                setSize(Gdx.graphics.width * BUBBLE_SIZE_WIDTH * (elapsed / MAX_ELAPSED_TIME), Gdx.graphics.width * BUBBLE_SIZE_WIDTH * (elapsed / MAX_ELAPSED_TIME))
-                setPosition(x - (elapsed / MAX_ELAPSED_TIME), y - (elapsed / MAX_ELAPSED_TIME))
+                setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height+ INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
+                setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime /2 , y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime/2 )
                 batch.draw(texture, x, y, width, height)
             }
         } else {

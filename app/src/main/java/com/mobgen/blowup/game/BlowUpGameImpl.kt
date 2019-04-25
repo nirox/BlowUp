@@ -94,7 +94,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
             else -> mainScreen.goBack()
         }
     }
-    
+
     override fun dispose() {
         super.dispose()
         mainScreen.dispose()
