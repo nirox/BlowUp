@@ -1,6 +1,7 @@
 package com.mobgen.blowup.game.entity
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -9,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import java.util.*
 
-class BubbleEntity(private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BubbleEntity) -> Unit) : Actor() {
+class BubbleEntity(private val blowUpSound: Sound, private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BubbleEntity) -> Unit) : Actor() {
     companion object {
         private const val BUBBLE_SIZE_WIDTH = 0.1f
         const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
@@ -20,6 +21,10 @@ class BubbleEntity(private val texture: Texture, listener: InputListener, privat
 
     private var elapsed = 0f
     var isPaused = false
+        set(value) {
+            field = value
+            if (!value) blowUpSound.stop()
+        }
     var bubbleColor = Color()
     val possibleColors = mutableListOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
 
@@ -63,9 +68,11 @@ class BubbleEntity(private val texture: Texture, listener: InputListener, privat
 
     fun deatch() {
         texture.dispose()
+        blowUpSound.dispose()
     }
 
     fun blowUp() {
+        blowUpSound.play()
         isVisible = false
     }
 
