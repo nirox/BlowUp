@@ -1,15 +1,15 @@
 package com.mobgen.blowup.game.entity
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Touchable
-import java.util.*
 
-class BombEntity(private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BombEntity) -> Unit) : Actor() {
+class BombEntity(private val bombFuseSound: Sound, private val bombExplotionSound: Sound, private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BombEntity) -> Unit) : Actor() {
     companion object {
         private const val BUBBLE_SIZE_WIDTH = 0.1f
         const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
@@ -18,7 +18,15 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
     }
 
     private var elapsed = 0f
+    private var bombFuseId = 0L
     var isPaused = false
+        set(value) {
+            field = value
+            if (!value) {
+                bombFuseSound.stop()
+                bombExplotionSound.stop()
+            }
+        }
 
     init {
         isVisible = false
@@ -34,15 +42,18 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
 
     override fun draw(batch: Batch, parentAlpha: Float) {
         if (!isPaused) {
+            if (elapsed == 0f && isVisible)
+                bombFuseId = bombFuseSound.play()
             elapsed += Gdx.graphics.deltaTime
 
             if (elapsed > MAX_ELAPSED_TIME) {
+                bombExplotionSound.play()
                 automaticBlowUp()
             }
             if (isVisible) {
                 batch.color = Color.WHITE
-                setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height+ INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
-                setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime /2 , y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime/2 )
+                setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
+                setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2, y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2)
                 batch.draw(texture, x, y, width, height)
             }
         } else {
@@ -55,9 +66,12 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
 
     fun deatch() {
         texture.dispose()
+        bombExplotionSound.dispose()
+        bombFuseSound.dispose()
     }
 
     fun blowUp() {
+        bombFuseSound.stop(bombFuseId)
         isVisible = false
     }
 

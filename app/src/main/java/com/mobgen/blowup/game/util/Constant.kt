@@ -41,6 +41,15 @@ class Constant {
         HightScore("Hight Score")
     }
 
+    enum class Sound(val sName: String) {
+        Background("sound/background.mp3"),
+        BlowUp("sound/blowUp.wav"),
+        BombExplotion("sound/bombExplotion.wav"),
+        BombFuse("sound/bombFuse.wav"),
+        GameOver("sound/gameOver.wav")
+
+    }
+
     enum class Color(val r: Int, val g: Int, val b: Int, val a: Float) {
         Brown(64, 31, 0, 1f)
     }

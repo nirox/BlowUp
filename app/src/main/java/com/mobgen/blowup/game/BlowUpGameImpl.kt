@@ -4,6 +4,8 @@ import com.badlogic.gdx.Game
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.TextureLoader
 import com.badlogic.gdx.assets.loaders.resolvers.LocalFileHandleResolver
+import com.badlogic.gdx.audio.Music
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction
@@ -30,7 +32,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
 
     val assetManager = AssetManager()
     val localAssetManager = AssetManager(LocalFileHandleResolver())
-
+    lateinit var backgroundMusic: Music
     override fun create() {
         loadingScreen = LoadingScreen(this)
         setScreen(loadingScreen)
@@ -47,6 +49,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         }
 
         Constant.Texture.values().forEach { assetManager.load(it.tName, Texture::class.java, textureParameter) }
+        Constant.Sound.values().forEach { assetManager.load(it.sName, if (it == Constant.Sound.Background || it ==Constant.Sound.GameOver) Music::class.java else Sound::class.java) }
     }
 
     fun checkLoadGameScreen() = assetManager.update() && localAssetManager.update() && !loadGameScreen
@@ -61,6 +64,10 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
             }
             scoreScreen = ScoreScreen(this)
             goMainScreen()
+            backgroundMusic = SoundFactory(assetManager).getBackgroundSound().apply {
+                isLooping = true
+                play()
+            }
             loadingScreen.dispose()
         })
     }
@@ -100,6 +107,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         mainScreen.dispose()
         scoreScreen.dispose()
         gameScreen.dispose()
+        backgroundMusic.dispose()
     }
 
 }
