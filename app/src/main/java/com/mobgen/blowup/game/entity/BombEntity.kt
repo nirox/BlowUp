@@ -1,15 +1,17 @@
 package com.mobgen.blowup.game.entity
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Touchable
-import java.util.*
 
-class BombEntity(private val texture: Texture, private val explodeTexture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bomb: BombEntity) -> Unit) : Actor() {
+
+class BombEntity(private val bombFuseSound: Sound, private val bombExplotionSound: Sound,private val texture: Texture, private val explodeTexture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bomb: BombEntity) -> Unit) : Actor() {
+
     companion object {
         private const val BUBBLE_SIZE_WIDTH = 0.1f
         const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
@@ -21,7 +23,15 @@ class BombEntity(private val texture: Texture, private val explodeTexture: Textu
     private var elapsed = 0f
     private var changeColorTimeMax = 0.4f
     private var changeColorTime = 0f
+    private var bombFuseId = 0L
     var isPaused = false
+        set(value) {
+            field = value
+            if (!value) {
+                bombFuseSound.stop()
+                bombExplotionSound.stop()
+            }
+        }
 
     init {
         isVisible = false
@@ -37,9 +47,12 @@ class BombEntity(private val texture: Texture, private val explodeTexture: Textu
 
     override fun draw(batch: Batch, parentAlpha: Float) {
         if (!isPaused) {
+            if (elapsed == 0f && isVisible)
+                bombFuseId = bombFuseSound.play()
             elapsed += Gdx.graphics.deltaTime
             changeColorTime += Gdx.graphics.deltaTime
             if (elapsed > MAX_ELAPSED_TIME) {
+                bombExplotionSound.play()
                 automaticBlowUp()
             }
             if (isVisible) {
@@ -63,9 +76,12 @@ class BombEntity(private val texture: Texture, private val explodeTexture: Textu
 
     fun deatch() {
         texture.dispose()
+        bombExplotionSound.dispose()
+        bombFuseSound.dispose()
     }
 
     fun blowUp() {
+        bombFuseSound.stop(bombFuseId)
         isVisible = false
     }
 

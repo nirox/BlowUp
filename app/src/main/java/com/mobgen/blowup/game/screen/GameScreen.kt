@@ -1,6 +1,7 @@
 package com.mobgen.blowup.game.screen
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.math.Vector2
@@ -11,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.mobgen.blowup.game.BlowUpGameImpl
+import com.mobgen.blowup.game.SoundFactory
 import com.mobgen.blowup.game.entity.*
 import com.mobgen.blowup.game.util.Constant
 import java.util.*
@@ -71,6 +73,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     private var colorsAmount = mutableMapOf<Color, Int>()
     private lateinit var lastPointCreated: PointEntity
     private val fielTextInput = TextField("", entityFactory.createTextStyleDefault())
+    private lateinit var gameOverSound: Music
 
     init {
         backgroundEntity = entityFactory.createBackground()
@@ -85,19 +88,20 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         pauseButton = entityFactory.createPauseButton(
                 listener = object : InputListener() {
                     override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                        pauseGame()
+                        controlPauseGame()
                         return super.touchDown(event, x, y, pointer, button)
                     }
                 })
         resumeButtonEntity = entityFactory.createResumeButton(Gdx.graphics.height / 2f, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                pauseGame()
+                controlPauseGame()
                 return super.touchDown(event, x, y, pointer, button)
             }
         })
         exitButtonEntity = entityFactory.createExitButton(Gdx.graphics.height / 2f, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                 if (levelTextEntity.level == 0) game.saveScore(if (fielTextInput.text.isNullOrBlank()) Constant.Strings.DefaultPlayerName.sName else fielTextInput.text, gameScoreEntity.pointsText)
+                game.backgroundMusic.play()
                 onEnd()
                 return super.touchDown(event, x, y, pointer, button)
             }
@@ -111,6 +115,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     override fun show() {
         super.show()
         Gdx.input.inputProcessor = stage
+        gameOverSound = SoundFactory(game.assetManager).getGameOver()
         stage.addActor(backgroundEntity)
         stage.addActor(timer)
         stage.addActor(gameBar)
@@ -136,7 +141,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         }
         getTextEntity.points = 0
         prepareLevel()
-        if (isPaused) pauseGame()
+        if (isPaused) controlPauseGame()
     }
 
     override fun render(delta: Float) {
@@ -185,6 +190,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     override fun dispose() {
         super.dispose()
         stage.dispose()
+        gameOverSound.dispose()
         backgroundEntity.deatch()
         gameBar.deatch()
         targetEntity.deatch()
@@ -194,7 +200,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     }
 
     fun goBack() {
-        pauseGame()
+        controlPauseGame()
     }
 
     private fun addPoint(axisX: Float, axisY: Float, width: Float, height: Float, color: Color, pointsText: String) {
@@ -229,14 +235,15 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             levelTextEntity.level = 0
             levelTextEntity.levelText = Constant.Strings.GameOver.sName
             levelTextEntity.isVisible = true
-            pauseGame()
+            controlPauseGame()
         }
 
         levelTextEntity.isVisible = true
     }
 
-    private fun pauseGame() {
+    private fun controlPauseGame() {
         if (isPaused) {
+            game.backgroundMusic.play()
             pauseButton.isVisible = true
             resumeButtonEntity.remove()
             exitButtonEntity.remove()
@@ -251,14 +258,18 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             isPaused = false
         } else {
             createPauseMenu()
-
-            bubbles.forEach {
-                it.isPaused = true
-            }
-            bombs.forEach {
-                it.isPaused = true
-            }
+            pauseEntitiesAndSounds()
             isPaused = true
+        }
+    }
+
+    private fun pauseEntitiesAndSounds() {
+        game.backgroundMusic.pause()
+        bubbles.forEach {
+            it.isPaused = true
+        }
+        bombs.forEach {
+            it.isPaused = true
         }
     }
 
@@ -373,6 +384,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             resumeButtonEntity.setPosition(resumeButtonEntity.x, bubbleButtons.y + (bubbleButtons.height / 4) * 3 - resumeButtonEntity.height)
             exitButtonEntity.setPosition(exitButtonEntity.x, bubbleButtons.y + bubbleButtons.height / 4)
         } else {
+            pauseEntitiesAndSounds()
+            game.backgroundMusic.stop()
+            gameOverSound.play()
             val scoreTemp = gameScoreEntity.pointsText
             gameScoreEntity = entityFactory.createGameScore()
             gameScoreEntity.colorText = Color.WHITE

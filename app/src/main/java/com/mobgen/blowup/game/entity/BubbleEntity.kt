@@ -1,7 +1,7 @@
 package com.mobgen.blowup.game.entity
 
-import android.util.Log
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
@@ -11,10 +11,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.mobgen.blowup.game.Util
-import com.mobgen.blowup.game.screen.GameScreen
 import java.util.*
 
-class BubbleEntity(private val texture: Texture, explodeTexture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BubbleEntity) -> Unit) : Actor() {
+class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: Texture, private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BubbleEntity) -> Unit) : Actor() {
     companion object {
         private const val BUBBLE_SIZE_WIDTH = 0.1f
         const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
@@ -30,6 +29,10 @@ class BubbleEntity(private val texture: Texture, explodeTexture: Texture, listen
 
     private var elapsed = 0f
     var isPaused = false
+        set(value) {
+            field = value
+            if (!value) blowUpSound.stop()
+        }
     var bubbleColor = Color()
     val possibleColors = mutableListOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
     private var loadAnimation: Animation<TextureRegion>
@@ -89,6 +92,7 @@ class BubbleEntity(private val texture: Texture, explodeTexture: Texture, listen
 
     fun deatch() {
         texture.dispose()
+        blowUpSound.dispose()
     }
 
     fun blowUp() {
@@ -98,7 +102,8 @@ class BubbleEntity(private val texture: Texture, explodeTexture: Texture, listen
         setSize(width * SIZE_PERCENT, height * SIZE_PERCENT)
     }
 
-    fun finish(){
+    fun finish() {
+        blowUpSound.play()
         isVisible = false
     }
 
