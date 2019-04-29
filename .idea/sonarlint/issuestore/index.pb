@@ -11,8 +11,6 @@ m
 =app/src/main/java/com/mobgen/blowup/game/screen/GameScreen.kt,e/4/e4af0db691dc5574b2bc35849e6bb4a3c3e1120a
 m
 =app/src/main/java/com/mobgen/blowup/game/entity/BombEntity.kt,d/1/d1c219d4475392095f888cd6e6891e7c4913e4f7
-m
-=app/src/main/java/com/mobgen/blowup/game/entity/LoadEntity.kt,4/5/45f7cfde205d285dca963eb65af9c0688e188aab
 o
 ?app/src/main/java/com/mobgen/blowup/game/entity/BubbleEntity.kt,b/0/b0ae7821bb918db7c908d918f1662077ab73a30d
 s

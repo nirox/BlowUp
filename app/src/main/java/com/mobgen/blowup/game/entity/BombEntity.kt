@@ -9,15 +9,18 @@ import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import java.util.*
 
-class BombEntity(private val texture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bubble: BombEntity) -> Unit) : Actor() {
+class BombEntity(private val texture: Texture, private val explodeTexture: Texture, listener: InputListener, private val onAutomaticBlowUp: (bomb: BombEntity) -> Unit) : Actor() {
     companion object {
         private const val BUBBLE_SIZE_WIDTH = 0.1f
         const val BUBBLE_SIZE_WIDTH_MAX = 0.2f
-        const val INCREMENT_IN_EACH_FRAME = 0.06f
+        const val INCREMENT_IN_EACH_FRAME = 0.4f
         const val MAX_ELAPSED_TIME = 2f
+        const val DECREASE_TIME_MAX_PERCENT = 0.25f
+        const val COLOR_TIME_MIN = 0.1f
     }
-
     private var elapsed = 0f
+    private var changeColorTimeMax = 0.4f
+    private var changeColorTime = 0f
     var isPaused = false
 
     init {
@@ -35,22 +38,27 @@ class BombEntity(private val texture: Texture, listener: InputListener, private 
     override fun draw(batch: Batch, parentAlpha: Float) {
         if (!isPaused) {
             elapsed += Gdx.graphics.deltaTime
-
+            changeColorTime += Gdx.graphics.deltaTime
             if (elapsed > MAX_ELAPSED_TIME) {
                 automaticBlowUp()
             }
             if (isVisible) {
                 batch.color = Color.WHITE
-                setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height+ INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
-                setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime /2 , y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime/2 )
-                batch.draw(texture, x, y, width, height)
+                if (width < Gdx.graphics.width * BUBBLE_SIZE_WIDTH_MAX) {
+                    setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
+                    setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2, y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2)
+                }
+                if (changeColorTime >=  changeColorTimeMax){
+                    batch.draw(explodeTexture, x, y, width, height)
+                    changeColorTime = 0f
+                    if (changeColorTimeMax >= COLOR_TIME_MIN) changeColorTimeMax -= changeColorTimeMax * DECREASE_TIME_MAX_PERCENT
+                } else
+                    batch.draw(texture, x, y, width, height)
             }
         } else {
             batch.color = Color.WHITE
             batch.draw(texture, x, y, width, height)
         }
-
-
     }
 
     fun deatch() {

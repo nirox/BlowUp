@@ -356,7 +356,6 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             colorsAmount[bubbleTarget.bubbleColor] = count - 1
             bubbles.remove(bubbleTarget)
         }
-
     }
 
     private fun createPauseMenu() {

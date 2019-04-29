@@ -35,9 +35,7 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
         loadingScreen = LoadingScreen(this)
         setScreen(loadingScreen)
         launchMainGameScreen()
-
     }
-
 
     fun launchMainGameScreen() {
         val textureParameter = TextureLoader.TextureParameter().apply {
@@ -45,7 +43,6 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
             magFilter = Texture.TextureFilter.Linear
             genMipMaps = true
         }
-
         Constant.Texture.values().forEach { assetManager.load(it.tName, Texture::class.java, textureParameter) }
     }
 
