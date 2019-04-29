@@ -21,7 +21,7 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
         const val MAX_ELAPSED_TIME = 2f
         private val random = Random()
         const val SIZE_PERCENT = 1.8f
-        const val POSITION_PERCENT = 0.33f
+        const val POSITION_PERCENT = 0.4f
         const val FRAME_COLS = 5
         const val FRAME_ROWS = 1
         const val FRAME_DURATION = 0.075f
@@ -83,7 +83,8 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
         } else {
             if (!isTouchable) {
                 batch.draw(loadAnimation.getKeyFrame(elapsed), x, y, width, height)
-                if (elapsed > 0.3f) finish()
+                if (elapsed > 0.3f)
+                    finish()
             } else {
                 batch.draw(texture, x, y, width, height)
             }
@@ -96,6 +97,7 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
     }
 
     fun blowUp() {
+        blowUpSound.play()
         elapsed = 0f
         touchable = Touchable.disabled
         setPosition(x - width * POSITION_PERCENT, y - width * POSITION_PERCENT)
@@ -103,7 +105,6 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
     }
 
     fun finish() {
-        blowUpSound.play()
         isVisible = false
     }
 

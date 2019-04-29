@@ -17,6 +17,7 @@ class Constant {
         BubbleGame("texture/bubbleGame.png"),
         Bomb("texture/bomb.png"),
         ExplodingBomb("texture/exploding_bomb.png"),
+        BombExplotion("texture/bombExplotion.png"),
         ExplodingBubble("texture/bubbleExplotion.png"),
         GameBar("texture/gameBar.png"),
         PauseIcon("texture/pause.png"),
