@@ -56,8 +56,9 @@ class GameLauncherActivity : AndroidApplication(), BlowUpGame.Listener {
         sharedPreferences.all.forEach {
             scores.addAll((it.value as MutableSet<String>).map { value -> Pair(it.key, value) })
         }
+        scores.sortByDescending { it.second.toInt() }
         val elements = if (scores.size < number) scores.size else number
-        return if (scores.isEmpty()) listOf() else scores.apply { sortBy { it.second.toInt() } }.subList(0, elements)
+        return if (scores.isEmpty()) listOf() else scores.subList(0, elements)
     }
 
     private fun initDagger() {

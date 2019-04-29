@@ -31,7 +31,7 @@ class ScoreEntity(private val titleBitmapFont: BitmapFont, private val bitmapFon
     }
 
     fun reset(scores: List<Pair<String, String>>) {
-        this.scores = scores.reversed()
+        this.scores = scores
         val maxElementSize = scores.maxBy { it.first.length + it.second.length }
         gyphLayout.setText(bitmapFont, "${maxElementSize?.first}: ${maxElementSize?.second}")
         setSize(gyphLayout.width, (scores.size - 1) * gyphLayout.height + HEIGHT_MERGIN_ELEMENT_PERCENT * (Gdx.graphics.height * scores.size + 1))

@@ -100,7 +100,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         })
         exitButtonEntity = entityFactory.createExitButton(Gdx.graphics.height / 2f, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                if (levelTextEntity.level == 0) game.saveScore(if (fielTextInput.text.isNullOrBlank()) Constant.Strings.DefaultPlayerName.sName else fielTextInput.text, gameScoreEntity.pointsText)
+                if (levelTextEntity.level == 0) game.saveScore(if (fielTextInput.text.isNullOrBlank()) Constant.Strings.DefaultPlayerName.sName else fielTextInput.text, gameScoreEntity.maxPoints)
                 game.backgroundMusic.play()
                 onEnd()
                 return super.touchDown(event, x, y, pointer, button)
@@ -136,6 +136,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         levelTextEntity.levelText = Constant.Strings.Level.sName
         gameScoreEntity.apply {
             pointsText = 0
+            maxPoints = 0
             colorText = Constant.getColor(Constant.Color.Brown)
             setPosition(initPosition.x, initPosition.y)
         }
@@ -387,7 +388,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             pauseEntitiesAndSounds()
             game.backgroundMusic.stop()
             gameOverSound.play()
-            val scoreTemp = gameScoreEntity.pointsText
+            val scoreTemp = gameScoreEntity.maxPoints
             gameScoreEntity = entityFactory.createGameScore()
             gameScoreEntity.colorText = Color.WHITE
             stage.addActor(gameScoreEntity)

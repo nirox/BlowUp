@@ -17,6 +17,7 @@ class GameScoreEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
     private val pointsGyphLayout = GlyphLayout()
     var pointsText = 0
     var minPoints = 0
+    var maxPoints = 0
     var colorText = Constant.getColor(Constant.Color.Brown)
     val initPosition = Vector2(Gdx.graphics.width / 2f - pointsGyphLayout.width / 2f, Gdx.graphics.height.toFloat())
 
@@ -30,7 +31,8 @@ class GameScoreEntity(private val bitmapFontRentSmall: BitmapFont) : Actor() {
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
         bitmapFontRentSmall.color = colorText
-        if (pointsText <= minPoints) pointsText = minPoints
+        if (pointsText < 0) pointsText = 0
+        if (pointsText > maxPoints) maxPoints = pointsText
         pointsGyphLayout.setText(bitmapFontRentSmall, pointsText.toString())
         batch?.let {
             bitmapFontRentSmall.draw(it, pointsText.toString(), Gdx.graphics.width / 2f - pointsGyphLayout.width / 2f, y)
