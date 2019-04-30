@@ -25,13 +25,14 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
         const val FRAME_COLS = 5
         const val FRAME_ROWS = 1
         const val FRAME_DURATION = 0.075f
+        const val MAX_ANIMATION_BLOW_UP_TIME = 0.3f
     }
 
     private var elapsed = 0f
     var isPaused = false
         set(value) {
             field = value
-            if (!value) blowUpSound.stop()
+            if (value) blowUpSound.stop()
         }
     var bubbleColor = Color()
     val possibleColors = mutableListOf<Color>(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
@@ -63,31 +64,11 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
 
         if (!isPaused) {
             elapsed += Gdx.graphics.deltaTime
-            if (!isTouchable) {
-                batch.draw(loadAnimation.getKeyFrame(elapsed), x, y, width, height)
-                if (elapsed > 0.3f)
-                    finish()
-            } else {
-                batch.draw(texture, x, y, width, height)
-            }
-            if (elapsed > MAX_ELAPSED_TIME) {
-                automaticBlowUp()
-            }
-
-            if (isVisible) {
-                batch.color = bubbleColor
-
-                setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
-                setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2, y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2)
-            }
+            blowUpControl(batch)
+            if (elapsed > MAX_ELAPSED_TIME) automaticBlowUp()
+            if (isVisible) drawBubble(batch)
         } else {
-            if (!isTouchable) {
-                batch.draw(loadAnimation.getKeyFrame(elapsed), x, y, width, height)
-                if (elapsed > 0.3f)
-                    finish()
-            } else {
-                batch.draw(texture, x, y, width, height)
-            }
+            blowUpControl(batch)
         }
     }
 
@@ -113,6 +94,22 @@ class BubbleEntity(private val blowUpSound: Sound, private val explodeTexture: T
             onAutomaticBlowUp(this)
         }
         blowUp()
+    }
+
+    private fun drawBubble(batch: Batch) {
+        batch.color = bubbleColor
+        setSize(width + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime, height + INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime)
+        setPosition(x - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2, y - INCREMENT_IN_EACH_FRAME * Gdx.graphics.width * Gdx.graphics.deltaTime / 2)
+    }
+
+    private fun blowUpControl(batch: Batch) {
+        if (!isTouchable) {
+            batch.draw(loadAnimation.getKeyFrame(elapsed), x, y, width, height)
+            if (elapsed > MAX_ANIMATION_BLOW_UP_TIME)
+                finish()
+        } else {
+            batch.draw(texture, x, y, width, height)
+        }
     }
 
     override fun equals(other: Any?): Boolean {

@@ -88,13 +88,13 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         pauseButton = entityFactory.createPauseButton(
                 listener = object : InputListener() {
                     override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                        controlPauseGame()
+                        onTouchPause()
                         return super.touchDown(event, x, y, pointer, button)
                     }
                 })
         resumeButtonEntity = entityFactory.createResumeButton(Gdx.graphics.height / 2f, true, object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                controlPauseGame()
+                onTouchPause()
                 return super.touchDown(event, x, y, pointer, button)
             }
         })
@@ -142,7 +142,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
         }
         getTextEntity.points = 0
         prepareLevel()
-        if (isPaused) controlPauseGame()
+        if (isPaused) onTouchPause()
     }
 
     override fun render(delta: Float) {
@@ -153,29 +153,9 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             counterTime += delta
 
             if (!changingLevel) {
-                timer.time += delta * Gdx.graphics.height * MAX_TIME
-
-                if (timer.time >= Gdx.graphics.height) {
-                    prepareLevel()
-                } else {
-                    timer.time += delta
-
-                    if (counterTime >= spawnTime) {
-                        randomX = random.nextInt(Gdx.graphics.width - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
-                        randomY = random.nextInt(Gdx.graphics.height - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() - (0.1f * Gdx.graphics.height.toFloat()).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
-
-                        if (currentTargetBubblesCount > spawnBombs) {
-                            createBomb()
-                        } else {
-                            createBubble()
-                        }
-                    }
-                }
+                gameControl(delta)
             } else if (changingLevel && counterTime >= TIME_BETWEEN_LEVEL) {
-                changingLevel = false
-                counterTime = 0f
-                timer.time = 0f
-                levelTextEntity.isVisible = false
+                nivelChanged()
             }
 
         }
@@ -201,7 +181,31 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
     }
 
     fun goBack() {
-        controlPauseGame()
+        onTouchPause()
+    }
+
+    private fun gameControl(delta: Float) {
+        timer.time += delta * Gdx.graphics.height * MAX_TIME
+
+        if (timer.time >= Gdx.graphics.height) {
+            prepareLevel()
+        } else {
+            timer.time += delta
+
+            if (counterTime >= spawnTime) {
+                generateRandomPosition()
+                if (currentTargetBubblesCount > spawnBombs) {
+                    createBomb()
+                } else {
+                    createBubble()
+                }
+            }
+        }
+    }
+
+    private fun generateRandomPosition() {
+        randomX = random.nextInt(Gdx.graphics.width - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
+        randomY = random.nextInt(Gdx.graphics.height - (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() - (0.1f * Gdx.graphics.height.toFloat()).toInt()).toFloat() + (Gdx.graphics.width * BubbleEntity.BUBBLE_SIZE_WIDTH_MAX).toInt() / 2
     }
 
     private fun addPoint(axisX: Float, axisY: Float, width: Float, height: Float, color: Color, pointsText: String) {
@@ -228,21 +232,28 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
             levelTextEntity.level++
             getTextEntity.points = levelTextEntity.level * POINTS_EACH_LEVEL
             spawnTime -= SPAWN_TIME_DECREMENT_EACH_LEVEL
-            if (spawnBombs >= MIN_SPAWN_BOMB_EACH_BUBBLE && levelTextEntity.level % MAX_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL == 0) spawnBombs -=  DECREMENT_BOMB_EACH_X_LEVEL
-            if(levelTextEntity.level % MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL == 0)maxBubbleColor += INCREMENT_BUBBLE_EACH_X_LEVEL
+            if (spawnBombs >= MIN_SPAWN_BOMB_EACH_BUBBLE && levelTextEntity.level % MAX_BOMB_EACH_BUBBLE_DECREMENT_EACH_LEVEL == 0) spawnBombs -= DECREMENT_BOMB_EACH_X_LEVEL
+            if (levelTextEntity.level % MAX_BUBBLE_SCREEN_INCREMENT_EACH_X_LEVEL == 0) maxBubbleColor += INCREMENT_BUBBLE_EACH_X_LEVEL
             levelTextEntity.isVisible = true
         } else {
             bubbleButtons.changeColor(Color.RED)
             levelTextEntity.level = 0
             levelTextEntity.levelText = Constant.Strings.GameOver.sName
             levelTextEntity.isVisible = true
-            controlPauseGame()
+            onTouchPause()
         }
 
         levelTextEntity.isVisible = true
     }
 
-    private fun controlPauseGame() {
+    private fun nivelChanged() {
+        changingLevel = false
+        counterTime = 0f
+        timer.time = 0f
+        levelTextEntity.isVisible = false
+    }
+
+    private fun onTouchPause() {
         if (isPaused) {
             game.backgroundMusic.play()
             pauseButton.isVisible = true
@@ -282,7 +293,7 @@ class GameScreen(game: BlowUpGameImpl, private val onEnd: () -> Unit = {}) : Bas
                         override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                             if (!isPaused) {
                                 val bombTarget = (event?.target as BombEntity)
-                                bombTarget.blowUp()
+                                bombTarget.finish()
                                 bombs.remove(bombTarget)
                             }
                             return super.touchDown(event, x, y, pointer, button)
