@@ -2,49 +2,51 @@ package com.mobgen.blowup.game
 
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.assets.loaders.TextureLoader
 import com.badlogic.gdx.assets.loaders.resolvers.LocalFileHandleResolver
+import com.badlogic.gdx.audio.Music
+import com.badlogic.gdx.audio.Sound
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction
+import com.mobgen.blowup.game.screen.GameScreen
 import com.mobgen.blowup.game.screen.LoadingScreen
+import com.mobgen.blowup.game.screen.MainScreen
+import com.mobgen.blowup.game.screen.ScoreScreen
+import com.mobgen.blowup.game.util.Constant
 
 
 class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUpGame {
 
     private lateinit var loadingScreen: LoadingScreen
     private var loadGameScreen = false
+    private lateinit var mainScreen: MainScreen
+    private lateinit var gameScreen: GameScreen
+    private lateinit var scoreScreen: ScoreScreen
+    private var currentScreen = ""
 
     companion object {
         const val TAG = "BlowUpGameImpl"
-        const val GRAVITY_Y = 0f
-        const val GRAVITY_X = 0f
+        const val SCORE_NUMBER = 5
     }
 
     val assetManager = AssetManager()
     val localAssetManager = AssetManager(LocalFileHandleResolver())
-
+    lateinit var backgroundMusic: Music
     override fun create() {
         loadingScreen = LoadingScreen(this)
         setScreen(loadingScreen)
+        launchMainGameScreen()
     }
 
-
     fun launchMainGameScreen() {
-        /*val textureParameter = TextureParameter()
-        textureParameter.minFilter = TextureFilter.MipMapLinearLinear
-        textureParameter.magFilter = TextureFilter.Linear
-        textureParameter.genMipMaps = true
-
-        assetManager.load(Constant.Texture.Board.tName, Texture::class.java)
-        assetManager.load(Constant.Texture.DiceAnimation.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.DiceFaces.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.TurnButton.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.Bubble.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.ExitButton.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.DiceDisabled.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.CardDisabled.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.BattleDisabled.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.BrightnessField.tName, Texture::class.java, textureParameter)
-        assetManager.load(Constant.Texture.BrightnessPawnsInField.tName, Texture::class.java, textureParameter)*/
+        val textureParameter = TextureLoader.TextureParameter().apply {
+            minFilter = Texture.TextureFilter.MipMapLinearLinear
+            magFilter = Texture.TextureFilter.Linear
+            genMipMaps = true
+        }
+        Constant.Texture.values().forEach { assetManager.load(it.tName, Texture::class.java, textureParameter) }
+        Constant.Sound.values().forEach { assetManager.load(it.sName, if (it == Constant.Sound.Background || it ==Constant.Sound.GameOver) Music::class.java else Sound::class.java) }
     }
 
     fun checkLoadGameScreen() = assetManager.update() && localAssetManager.update() && !loadGameScreen
@@ -52,15 +54,57 @@ class BlowUpGameImpl(private val activity: BlowUpGame.Listener) : Game(), BlowUp
     fun loadGameScreen(): SequenceAction {
         loadGameScreen = true
         return Actions.sequence(Actions.run {
-            /*mainScreen = MainGameScreen(this)
-            setScreen(mainScreen)
-            loadingScreen.dispose()*/
+            mainScreen = MainScreen(this)
+            gameScreen = GameScreen(this) {
+                goMainScreen()
+                mainScreen.goBack()
+            }
+            scoreScreen = ScoreScreen(this)
+            goMainScreen()
+            backgroundMusic = SoundFactory(assetManager).getBackgroundSound().apply {
+                isLooping = true
+                play()
+            }
+            loadingScreen.dispose()
         })
+    }
+
+    fun goMainScreen() {
+        currentScreen = MainScreen.TAG
+        setScreen(mainScreen)
+    }
+
+    fun goGameScreen() {
+        currentScreen = GameScreen.TAG
+        setScreen(gameScreen)
+    }
+
+    fun goScoreScreen() {
+        currentScreen = ScoreScreen.TAG
+        setScreen(scoreScreen)
+    }
+
+    fun saveScore(name: String, score: Int) = activity.saveScoreData(Pair(name, score.toString()))
+
+    fun loadScore() = activity.getScoreData(SCORE_NUMBER)
+
+    override fun onBack() {
+        when (currentScreen) {
+            ScoreScreen.TAG -> scoreScreen.goBack {
+                goMainScreen()
+                mainScreen.goBack()
+            }
+            GameScreen.TAG -> gameScreen.goBack()
+            else -> mainScreen.goBack()
+        }
     }
 
     override fun dispose() {
         super.dispose()
-        //if (::mainScreen.isInitialized) mainScreen.dispose()
+        mainScreen.dispose()
+        scoreScreen.dispose()
+        gameScreen.dispose()
+        backgroundMusic.dispose()
     }
 
 }
